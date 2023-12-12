@@ -42,27 +42,23 @@ public class Myapp extends SipServlet {
 	protected void doRegister(SipServletRequest request) throws ServletException,
 			IOException {
 
-		String to = request.getHeader("To");
-		log(to);
-		String aux = getSIPuri(to);
-		log(aux);
-		aux = getSIPuriPort(to);
-		log(aux);
-		String contact2 = request.getHeader("Contact");
-		log(contact2);
-		aux = getSIPuri(contact2);
-		log(aux);
-		aux = getSIPuriPort(contact2);
-		log(aux);
-		int[] teste = new int[1];
-		teste[1] = 2;
-
-
-
+		// String to = request.getHeader("To");
+		// log(to);
+		// String aux = getSIPuri(to);
+		// log(aux);
+		// aux = getSIPuriPort(to);
+		// log(aux);
+		// String contact2 = request.getHeader("Contact");
+		// log(contact2);
+		// aux = getSIPuri(contact2);
+		// log(aux);
+		// aux = getSIPuriPort(contact2);
+		// log(aux);
 
 
 		String aor = getSIPuri(request.getHeader("To"));
 		String contact = getSIPuriPort(request.getHeader("Contact"));
+
 		RegistrarDB.put(aor, contact);
 		SipServletResponse response; 
 		response = request.createResponse(200);
