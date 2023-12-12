@@ -57,8 +57,8 @@ public class Myapp extends SipServlet {
 		// log(aux);
 		// aux = getSIPuriPort(contact2);
 		// log(aux);
-
-		if (!(from.substring(from.lastIndexOf("@") + 1)).equals("a.pt")) {
+		string domain = from.substring(from.lastIndexOf("@") + 1);
+		if (!domain.equals("a.pt")) {
 			SipServletResponse response;
 			response = request.createResponse(403);
 			response.send();
