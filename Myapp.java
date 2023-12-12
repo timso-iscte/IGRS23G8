@@ -65,13 +65,15 @@ public class Myapp extends SipServlet {
 			response.send();
 		} else {
 
-			String contact = getSIPuriPort(request.getHeader("Contact"));
+			String contact = request.getHeader("Contact");
+			log(contact);
 
 			if (contact.substring(contact.lastIndexOf("=") + 1).equals(0)) {
 				RegistrarDB.remove(aor);
 				SipServletResponse response;
 				response = request.createResponse(200);
 				response.send();
+				log("FAZER DERGEGISTAR");
 			} else {
 
 				RegistrarDB.put(aor, contact);
