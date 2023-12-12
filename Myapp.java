@@ -51,35 +51,36 @@ public class Myapp extends SipServlet {
 		// log(to);
 		// aux = getSIPuriPort(to);
 		// log(aux);
-		// String contact2 = request.getHeader("Contact");
-		// log(contact2);
+		String contact2 = request.getHeader("Contact");
+		log(contact2);
 		// aux = getSIPuri(contact2);
 		// log(aux);
 		// aux = getSIPuriPort(contact2);
 		// log(aux);
 
 		if (!(from.substring(from.lastIndexOf("@") + 1)).contains("a.pt")) {
+			SipServletResponse response;
 			response = request.createResponse(403);
 			response.send();
+		} else {
 
+			String aor = getSIPuri(request.getHeader("To"));
+			String contact = getSIPuriPort(request.getHeader("Contact"));
+
+			RegistrarDB.put(aor, contact);
+			SipServletResponse response;
+			response = request.createResponse(200);
+			response.send();
+
+			// Some logs to show the content of the Registrar database.
+			log("REGISTER (myapp):***");
+			Iterator<Map.Entry<String, String>> it = RegistrarDB.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<String, String> pairs = (Map.Entry<String, String>) it.next();
+				System.out.println(pairs.getKey() + " = " + pairs.getValue());
+			}
+			log("REGISTER (myapp):***");
 		}
-
-		String aor = getSIPuri(request.getHeader("To"));
-		String contact = getSIPuriPort(request.getHeader("Contact"));
-
-		RegistrarDB.put(aor, contact);
-		SipServletResponse response;
-		response = request.createResponse(200);
-		response.send();
-
-		// Some logs to show the content of the Registrar database.
-		log("REGISTER (myapp):***");
-		Iterator<Map.Entry<String, String>> it = RegistrarDB.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, String> pairs = (Map.Entry<String, String>) it.next();
-			System.out.println(pairs.getKey() + " = " + pairs.getValue());
-		}
-		log("REGISTER (myapp):***");
 	}
 
 	/**
