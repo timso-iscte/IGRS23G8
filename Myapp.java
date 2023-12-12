@@ -65,7 +65,6 @@ public class Myapp extends SipServlet {
 			response.send();
 		} else {
 
-			String aor = getSIPuri(request.getHeader("To"));
 			String contact = getSIPuriPort(request.getHeader("Contact"));
 
 			if (contact.substring(from.lastIndexOf("=") + 1).equals(0)) {
