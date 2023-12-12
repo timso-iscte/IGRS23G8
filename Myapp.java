@@ -67,8 +67,9 @@ public class Myapp extends SipServlet {
 
 			String contact = request.getHeader("Contact");
 			log(contact);
-
-			if (contact.substring(contact.lastIndexOf("=") + 1).equals(0)) {
+			String expirity = contact.substring(contact.lastIndexOf("=") + 1);
+			log(expirity);
+			if (expirity.equals(0)) {
 				RegistrarDB.remove(aor);
 				SipServletResponse response;
 				response = request.createResponse(200);
