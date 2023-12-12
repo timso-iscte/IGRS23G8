@@ -67,7 +67,7 @@ public class Myapp extends SipServlet {
 
 			String contact = getSIPuriPort(request.getHeader("Contact"));
 
-			if (contact.substring(from.lastIndexOf("=") + 1).equals(0)) {
+			if (contact.substring(contact.lastIndexOf("=") + 1).equals(0)) {
 				RegistrarDB.remove(aor);
 				SipServletResponse response;
 				response = request.createResponse(200);
