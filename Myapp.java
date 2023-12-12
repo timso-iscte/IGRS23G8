@@ -69,7 +69,7 @@ public class Myapp extends SipServlet {
 			log(contact);
 			String expirity = contact.substring(contact.lastIndexOf("=") + 1);
 			log(expirity);
-			if (expirity.equals(0)) {
+			if (expirity.equals("0")) {
 				RegistrarDB.remove(aor);
 				SipServletResponse response;
 				response = request.createResponse(200);
