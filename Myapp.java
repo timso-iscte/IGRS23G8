@@ -1,4 +1,3 @@
-
 /*
  * $Id: EchoServlet.java,v 1.5 2003/06/22 12:32:15 fukuda Exp $
  */
@@ -48,16 +47,6 @@ public class Myapp extends SipServlet {
 		log(from);
 		String aux = getSIPuri(from);
 		log(aux);
-		// String to = request.getHeader("To");
-		// log(to);
-		// aux = getSIPuriPort(to);
-		// log(aux);
-		// String contact2 = request.getHeader("Contact");
-		// log(contact2);
-		// aux = getSIPuri(contact2);
-		// log(aux);
-		// aux = getSIPuriPort(contact2);
-		// log(aux);
 
 		SipServletResponse response;
 
@@ -68,9 +57,12 @@ public class Myapp extends SipServlet {
 			response.send();
 		} else {
 
-			String contact = request.getHeader("Contact");
+			String contact_field = request.getHeader("Contact");
+			log(contact_field);
+			// String contact = contact_field.substring(0, contact_field.lastIndexOf(";")).substring(1, contact_field.length()-1);
+			String contact = contact_field.substring(1, contact_field.indexOf(">"));
 			log(contact);
-			String expirity = contact.substring(contact.lastIndexOf("=") + 1);
+			String expirity = contact_field.substring(contact_field.lastIndexOf("=") + 1);
 			log(expirity);
 			if (expirity.equals("0")) {
 				RegistrarDB.remove(aor);
@@ -128,24 +120,29 @@ public class Myapp extends SipServlet {
 		// SipServletResponse response = request.createResponse(404);
 		// response.send();
 
-		String aor = getSIPuri(request.getHeader("To")); // Get the To AoR
-		String domain = aor.substring(aor.indexOf("@") + 1, aor.length());
-		log(domain);
-		if (domain.equals("a.pt")) { // The To domain is the same as the server
-			if (!RegistrarDB.containsKey(aor)) { // To AoR not in the database, reply 404
-				SipServletResponse response;
+		SipServletResponse response;
+
+		String aor_remetente = getSIPuri(request.getHeader("From")); // Get the To AoR
+		String aor_recipiente = getSIPuri(request.getHeader("To")); // Get the To AoR
+
+		if (!validateDomain(aor_remetente) || !validateDomain(aor_recipiente)) {
+			response = request.createResponse(403);
+			response.send();
+		} else {
+			if (!RegistrarDB.containsKey(aor_recipiente)) { // To AoR not in the database, reply 404
 				response = request.createResponse(404);
 				response.send();
 			} else {
+				log("a começar o proxy");
 				Proxy proxy = request.getProxy();
 				proxy.setRecordRoute(false);
 				proxy.setSupervised(false);
-				URI toContact = factory.createURI(RegistrarDB.get(aor));
+				log("começou o proxy");
+				URI toContact = factory.createURI(RegistrarDB.get(aor_recipiente));
+				log("leu bem a base de dados");
 				proxy.proxyTo(toContact);
+				log("proxy falhou");
 			}
-		} else {
-			Proxy proxy = request.getProxy();
-			proxy.proxyTo(request.getRequestURI());
 		}
 
 		/*
