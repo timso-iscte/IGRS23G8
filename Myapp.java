@@ -17,6 +17,7 @@ import javax.servlet.sip.SipFactory;
 
 /**
  */
+// teste
 public class Myapp extends SipServlet {
 
 	/**
@@ -57,10 +58,12 @@ public class Myapp extends SipServlet {
 		// log(aux);
 		// aux = getSIPuriPort(contact2);
 		// log(aux);
+
+		SipServletResponse response;
+
 		String aor = getSIPuri(request.getHeader("From"));
-		String domain = aor.substring(aor.lastIndexOf("@") + 1);
-		if (!domain.equals("a.pt")) {
-			SipServletResponse response;
+
+		if (!validateDomain(aor)) {
 			response = request.createResponse(403);
 			response.send();
 		} else {
@@ -71,14 +74,12 @@ public class Myapp extends SipServlet {
 			log(expirity);
 			if (expirity.equals("0")) {
 				RegistrarDB.remove(aor);
-				SipServletResponse response;
 				response = request.createResponse(200);
 				response.send();
 				log("FAZER DERGEGISTAR");
 			} else {
 
 				RegistrarDB.put(aor, contact);
-				SipServletResponse response;
 				response = request.createResponse(200);
 				response.send();
 			}
@@ -186,6 +187,12 @@ public class Myapp extends SipServlet {
 		String f = uri.substring(uri.indexOf("<") + 1, uri.indexOf(">"));
 		return f;
 	}
+
+	protected boolean validateDomain(String aor) {
+		String domain = aor.substring(aor.lastIndexOf("@") + 1);
+		return domain.equals("a.pt");
+	}
+
 }
 
 // teste
