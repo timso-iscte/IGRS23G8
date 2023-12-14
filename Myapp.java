@@ -136,7 +136,7 @@ public class Myapp extends SipServlet {
 			} else {
 				log("a começar o proxy");
 				Proxy proxy = request.getProxy();
-				proxy.setRecordRoute(false);
+				proxy.setRecordRoute(true);
 				proxy.setSupervised(false);
 				log("começou o proxy");
 				URI toContact = factory.createURI(RegistrarDB.get(aor_recipiente));
