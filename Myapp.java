@@ -59,7 +59,8 @@ public class Myapp extends SipServlet {
 
 			String contact_field = request.getHeader("Contact");
 			log(contact_field);
-			// String contact = contact_field.substring(0, contact_field.lastIndexOf(";")).substring(1, contact_field.length()-1);
+			// String contact = contact_field.substring(0,
+			// contact_field.lastIndexOf(";")).substring(1, contact_field.length()-1);
 			String contact = contact_field.substring(1, contact_field.indexOf(">"));
 			log(contact);
 			String expirity = contact_field.substring(contact_field.lastIndexOf("=") + 1);
@@ -157,6 +158,21 @@ public class Myapp extends SipServlet {
 		 * response.send();
 		 * }
 		 */
+	}
+
+	/**
+	 * processes messages
+	 * 
+	 *
+	 * @param request
+	 */
+	protected void doMessage(SipServletRequest request)
+			throws ServletException, IOException {
+		log("entrou na function message");
+		SipServletResponse response;
+		response = request.createResponse(405);
+		response.send();
+
 	}
 
 	/**
