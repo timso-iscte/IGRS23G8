@@ -24,11 +24,13 @@ public class Myapp extends SipServlet {
 	 */
 	private static final long serialVersionUID = 1L;
 	static private Map<String, String> RegistrarDB;
+	static private Map<String, String> EstadosDB;
 	static private SipFactory factory;
 
 	public Myapp() {
 		super();
 		RegistrarDB = new HashMap<String, String>();
+		EstadosDB = new HashMap<String, String>();
 	}
 
 	public void init() {
@@ -58,21 +60,21 @@ public class Myapp extends SipServlet {
 		} else {
 
 			String contact_field = request.getHeader("Contact");
+			String contact = getSIPuriPort(request.getHeader("Contact"));
 			log(contact_field);
-			// String contact = contact_field.substring(0,
-			// contact_field.lastIndexOf(";")).substring(1, contact_field.length()-1);
-			String contact = contact_field.substring(1, contact_field.indexOf(">"));
 			log(contact);
 			String expirity = contact_field.substring(contact_field.lastIndexOf("=") + 1);
 			log(expirity);
 			if (expirity.equals("0")) {
 				RegistrarDB.remove(aor);
+				EstadosDB.remove(aor);
 				response = request.createResponse(200);
 				response.send();
 				log("FAZER DERGEGISTAR");
 			} else {
 
 				RegistrarDB.put(aor, contact);
+				EstadosDB.put(aor, "Available");
 				response = request.createResponse(200);
 				response.send();
 			}
@@ -130,19 +132,26 @@ public class Myapp extends SipServlet {
 			response = request.createResponse(403);
 			response.send();
 		} else {
-			if (!RegistrarDB.containsKey(aor_recipiente)) { // To AoR not in the database, reply 404
-				response = request.createResponse(404);
+			if (aor_recipiente.equals("sip:chat@a.pt")) {
+				log("entrar na conferencia");
+				response = request.createResponse(300);
+				response.setHeader("Contact", "sip:conf@127.0.0.1:5070");
 				response.send();
 			} else {
-				log("a começar o proxy");
-				Proxy proxy = request.getProxy();
-				proxy.setRecordRoute(true);
-				proxy.setSupervised(false);
-				log("começou o proxy");
-				URI toContact = factory.createURI(RegistrarDB.get(aor_recipiente));
-				log("leu bem a base de dados");
-				proxy.proxyTo(toContact);
-				log("proxy falhou");
+				if (!RegistrarDB.containsKey(aor_recipiente)) { // To AoR not in the database, reply 404
+					response = request.createResponse(404);
+					response.send();
+				} else {
+					log("a começar o proxy");
+					Proxy proxy = request.getProxy();
+					proxy.setRecordRoute(true);
+					proxy.setSupervised(false);
+					log("começou o proxy");
+					URI toContact = factory.createURI(RegistrarDB.get(aor_recipiente));
+					log("leu bem a base de dados");
+					proxy.proxyTo(toContact);
+					log("proxy falhou");
+				}
 			}
 		}
 
