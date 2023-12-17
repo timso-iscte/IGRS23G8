@@ -8,6 +8,8 @@ de uma chamada.
 
 ### Sprint Planning do Grupo
 
+![image](https://github.com/timso-iscte/IGRS23G8/assets/114669055/6bf747a0-6202-4c07-af26-5c2425f6089b)
+
 #### Membros do Grupo 08:
 
 - Guilherme Mendes -> 98731
