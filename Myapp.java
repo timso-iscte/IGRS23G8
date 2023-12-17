@@ -152,14 +152,24 @@ public class Myapp extends SipServlet {
 		log("entrou na function message");
 		SipServletResponse response;
 
-		String aor_remetente = getSIPuri(request.getHeader("From")); // Get the To AoR
+		String aor_remetente = getSIPuri(request.getHeader("From")); // Get the From AoR
 		String aor_servidor = getSIPuri(request.getHeader("To")); // Get the To AoR
+		String aor_recipiente = (String) request.getContent(); // Get the AoR on the message
 
-		if (!validateDomain(aor_remetente) || !aor_servidor.equals("gofind@a.pt")) {
+		if (!validateDomain(aor_remetente) || !aor_servidor.equals("sip:gofind@a.pt")
+				|| !validateDomain(aor_recipiente)) {
 			response = request.createResponse(403);
 			response.send();
+		} else if (!EstadosDB.containsKey(aor_recipiente)) {
+			response = request.createResponse(404);
+			response.send();
 		} else {
-			// String aor_recipiente = request;
+			if (!EstadosDB.get(aor_recipiente).equals("Available")) {
+				response = request.createResponse(200);
+				// response.setHeader("Content-Type", "text/plain");
+				// response.setContent("data-text-lines", "teste");
+				response.send();
+			}
 
 		}
 
