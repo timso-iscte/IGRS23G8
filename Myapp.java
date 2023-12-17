@@ -80,13 +80,7 @@ public class Myapp extends SipServlet {
 			}
 
 			// Some logs to show the content of the Registrar database.
-			log("REGISTER (myapp):***");
-			Iterator<Map.Entry<String, String>> it = RegistrarDB.entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry<String, String> pairs = (Map.Entry<String, String>) it.next();
-				System.out.println(pairs.getKey() + " = " + pairs.getValue());
-			}
-			log("REGISTER (myapp):***");
+			logContacts();
 		}
 	}
 
@@ -100,28 +94,7 @@ public class Myapp extends SipServlet {
 	protected void doInvite(SipServletRequest request)
 			throws ServletException, IOException {
 
-		// Some logs to show the content of the Registrar database.
-		log("INVITE (myapp):***");
-		Iterator<Map.Entry<String, String>> it = RegistrarDB.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, String> pairs = (Map.Entry<String, String>) it.next();
-			System.out.println(pairs.getKey() + " = " + pairs.getValue());
-		}
-		log("INVITE (myapp):***");
-
-		// String aor = getSIPuri(request.getHeader("To")); // Get the To AoR
-		// if (!RegistrarDB.containsKey(aor)) { // To AoR not in the database, reply 404
-		// SipServletResponse response;
-		// response = request.createResponse(404);
-		// response.send();
-		// } else {
-		// SipServletResponse response = request.createResponse(300);
-		// // Get the To AoR contact from the database and add it to the response
-		// response.setHeader("Contact",RegistrarDB.get(aor));
-		// response.send();
-		// }
-		// SipServletResponse response = request.createResponse(404);
-		// response.send();
+		logContacts();
 
 		SipServletResponse response;
 
@@ -131,16 +104,28 @@ public class Myapp extends SipServlet {
 		if (!validateDomain(aor_remetente) || !validateDomain(aor_recipiente)) {
 			response = request.createResponse(403);
 			response.send();
+
 		} else {
 			if (aor_recipiente.equals("sip:chat@a.pt")) {
+				String sala = "sip:conf@127.0.0.1:5070";
 				log("entrar na conferencia");
-				response = request.createResponse(300);
-				response.setHeader("Contact", "sip:conf@127.0.0.1:5070");
-				response.send();
+				log("a começar o proxy");
+				Proxy proxy = request.getProxy();
+				proxy.setRecordRoute(true);
+				proxy.setSupervised(false);
+				log("começou o proxy");
+				URI toContact = factory.createURI(sala);
+				log("leu bem a base de dados");
+				proxy.proxyTo(toContact);
+				log("proxy falhou");
 			} else {
 				if (!RegistrarDB.containsKey(aor_recipiente)) { // To AoR not in the database, reply 404
 					response = request.createResponse(404);
 					response.send();
+				} else if (!EstadosDB.get(aor_recipiente).equals("Available")) {
+					response = request.createResponse(486);
+					response.send();
+
 				} else {
 					log("a começar o proxy");
 					Proxy proxy = request.getProxy();
@@ -154,19 +139,6 @@ public class Myapp extends SipServlet {
 				}
 			}
 		}
-
-		/*
-		 * if (!RegistrarDB.containsKey(aor)) { // To AoR not in the database, reply 404
-		 * SipServletResponse response;
-		 * response = request.createResponse(404);
-		 * response.send();
-		 * } else {
-		 * SipServletResponse response = request.createResponse(300);
-		 * // Get the To AoR contact from the database and add it to the response
-		 * response.setHeader("Contact",RegistrarDB.get(aor));
-		 * response.send();
-		 * }
-		 */
 	}
 
 	/**
@@ -179,8 +151,78 @@ public class Myapp extends SipServlet {
 			throws ServletException, IOException {
 		log("entrou na function message");
 		SipServletResponse response;
-		response = request.createResponse(405);
-		response.send();
+
+		String aor_remetente = getSIPuri(request.getHeader("From")); // Get the To AoR
+		String aor_servidor = getSIPuri(request.getHeader("To")); // Get the To AoR
+
+		if (!validateDomain(aor_remetente) || !aor_servidor.equals("gofind@a.pt")) {
+			response = request.createResponse(403);
+			response.send();
+		} else {
+			// String aor_recipiente = request;
+
+		}
+
+	}
+
+	protected void doResponse(SipServletRequest request)
+			throws ServletException, IOException {
+
+	}
+
+	protected void doAck(SipServletRequest request)
+			throws ServletException, IOException {
+		log("-------------------------------------------------------------------------------------------entrei no doAck");
+		String aor_remetente = getSIPuri(request.getHeader("From")); // Get the To AoR
+		String aor_recipiente = getSIPuri(request.getHeader("To")); // Get the To AoR
+		if (!aor_recipiente.equals("sip:chat@a.pt")) {
+			EstadosDB.put(aor_remetente, "Busy");
+			EstadosDB.put(aor_recipiente, "Busy");
+		} else {
+			EstadosDB.put(aor_remetente, "In Conference");
+		}
+		logContacts();
+
+	}
+
+	/**
+	 * processes Bye
+	 * 
+	 *
+	 * @param request
+	 */
+	protected void doBye(SipServletRequest request)
+			throws ServletException, IOException {
+
+		log("entrou no doBye");
+
+		String aor_remetente = getSIPuri(request.getHeader("From")); // Get the To AoR
+		String aor_recipiente = getSIPuri(request.getHeader("To")); // Get the To AoR
+
+		if (!aor_recipiente.equals("sip:chat@a.pt")) {
+			EstadosDB.put(aor_remetente, "Available");
+			EstadosDB.put(aor_recipiente, "Available");
+		} else {
+			EstadosDB.put(aor_remetente, "Available");
+		}
+		logContacts();
+
+	}
+
+	protected void logContacts() {
+		log("***Contacts (myapp):***");
+		Iterator<Map.Entry<String, String>> it = RegistrarDB.entrySet().iterator();
+		Iterator<Map.Entry<String, String>> it2 = EstadosDB.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, String> pairs = (Map.Entry<String, String>) it.next();
+			System.out.println(pairs.getKey() + " = " + pairs.getValue());
+		}
+
+		while (it2.hasNext()) {
+			Map.Entry<String, String> pairs = (Map.Entry<String, String>) it2.next();
+			System.out.println(pairs.getKey() + " = " + pairs.getValue());
+		}
+		log("***Contacts (myapp):***");
 
 	}
 
